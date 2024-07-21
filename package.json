@@ -1,0 +1,16 @@
+{
+  "name": "double-tags",
+  "version": "1.0.6",
+  "main": "double-tags.js",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/james-william-r/double-tags.git"
+  },
+  "files": [
+    "double-tags.js"
+  ],
+  "author": "james-william-r",
+  "license": "MIT",
+  "description": "Replace {{tags}} with something else."
+}

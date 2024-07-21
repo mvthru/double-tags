@@ -1,0 +1,8 @@
+.DS_Store
+*.log
+
+# Exclude NPM Packages
+double-tags-*.*.*.tgz
+
+# Exclude Modules
+/node_modules
