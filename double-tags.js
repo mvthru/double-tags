@@ -9,7 +9,20 @@ export class DoubleTags {
         str = String(str);
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
       },
+      escape: (str) => {
+        if (/[&<>"']/.test(String(str))) {
+          return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+        } else {
+          return str;
+        }
+      },
     };
+    this.escapeByDefault = false;
   }
 
   render(template, view, partials = {}) {
@@ -35,6 +48,11 @@ export class DoubleTags {
       }
 
       let result = tpl;
+
+      // Escape All HTML (disabled by default)
+      if (this.escapeByDefault) {
+        result = this.functions.escape(result);
+      }
 
       // Process partials
       result = result.replace(sectionRegex, (match, sectionName, content) => {
@@ -133,6 +151,10 @@ export class DoubleTags {
 
   createFunction(name, func) {
     this.functions[name] = func;
+  }
+
+  escapeByDefault() {
+    this.escapeByDefault = true;
   }
 
   getRegex() {
