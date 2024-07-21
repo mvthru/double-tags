@@ -1,7 +1,7 @@
 ## Double Tags
 Double Tags provides a quick and easy way to replace {{tags}} with something else in NodeJS.
 
-*Just a quick heads up, Double Tags does not currently escape HTML, or provide any sort of sanitation. This is intentional, but may change in the future.*
+*Just a quick heads up, Double Tags does not escape HTML by default. This is intentional, but can be changed by calling `doubleTags.escapeByDefault()` before any render functions.*
 
 ### Getting Started
 ````ssh
@@ -47,6 +47,11 @@ Functions enable you to extend variables. You can specify an un-capped number of
 doubleTags.createFunction("img", (src, width) => `/image/${src}?width=${width}`);
 ````
 
+#### Escape HTML by Default
+````js
+doubleTags.escapeByDefault()
+````
+
 #### Customize Opening/Closing Tags
 ````js
 doubleTags.setTags("👉", "👈")
@@ -63,6 +68,8 @@ Alongside custom functions, Double Tags also has a small handful of built-in fun
 `lower` - Converts variable to lowercase.
 
 `capitalize` - Capitalizes first char. of variable.
+
+`escape` - Escapes HTML characters.
 
 #### Loops
 If the JSON you pass to Double Tags contains an array of objects, you can loop over this. A special `{{@index}}` tag is also available inside of loops, to return the current item index.
