@@ -4,11 +4,7 @@ Double Tags provides a quick and easy way to replace {{tags}} with something els
 *Just a quick heads up, Double Tags does not escape HTML by default. This is intentional, but can be changed by calling `doubleTags.escapeByDefault()` before any render functions.*
 
 ### Getting Started
-````ssh
-npm i double-tags
-````
-
-Alternatively, just drop the `double-tags.js` file into your project, and include like so:
+Just drop the `double-tags.js` file into your project, and include like so:
 ````js
 import { DoubleTags } from "[path_to_file]/double-tags.js";
 ````
