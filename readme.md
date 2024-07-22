@@ -46,6 +46,8 @@ const products =`{{#store.settings.navigation}}
 doubleTags.createPartial("content", products);
 ````
 
+You can reference it just like a normal tag, but with a `>` prepended to the tag name. Eg. `{{>content}}`.
+
 #### Custom Fuctions
 Functions enable you to extend variables. You can specify an un-capped number of variables, optionally perform some function, and then return the completed value.
 ````js
@@ -88,3 +90,6 @@ If the JSON you pass to Double Tags contains an array of objects, you can loop o
   </li>
 {{/store.settings.navigation}}
 ````
+
+#### Partials
+If you've defined a partial, you can reference it just like a normal tag, but with a `>` prepended to the tag name. Eg. `{{>content}}`.
