@@ -22,24 +22,24 @@ export class DoubleTags {
         }
       },
     };
-    this.escapeByDefault = false;
+    this._escapeByDefault = false;
   }
 
   render(template, view, partials = {}) {
     try {
       this.partials = { ...this.partials, ...partials };
 
-      const regex = this.getRegex();
-      const sectionRegex = this.getSectionRegex();
+      const regex = this.#getRegex();
+      const sectionRegex = this.#getSectionRegex();
 
-      return this.renderWithCache(template, view, regex, sectionRegex);
+      return this.#renderWithCache(template, view, regex, sectionRegex);
     } catch (error) {
       console.error("[DoubleTags] Error in render:", error);
       return "";
     }
   }
 
-  renderWithCache(template, view, regex, sectionRegex) {
+  #renderWithCache(template, view, regex, sectionRegex) {
     const cache = new Map();
 
     const renderTemplate = (tpl, context) => {
@@ -56,7 +56,7 @@ export class DoubleTags {
 
       // Process partials
       result = result.replace(sectionRegex, (match, sectionName, content) => {
-        return this.processSection(sectionName, content, context);
+        return this.#processSection(sectionName, content, context);
       });
 
       // Process variables
@@ -69,7 +69,7 @@ export class DoubleTags {
           }
           return `{{>${partialName}}}`;
         }
-        return this.processVariable(content, context);
+        return this.#processVariable(content, context);
       });
 
       cache.set(tpl, result);
@@ -79,9 +79,9 @@ export class DoubleTags {
     return renderTemplate(template, view);
   }
 
-  processSection(sectionName, content, view) {
+  #processSection(sectionName, content, view) {
     let result = "";
-    const value = this.lookup(view, sectionName);
+    const value = this.#lookup(view, sectionName);
 
     if (Array.isArray(value)) {
       result += value
@@ -100,9 +100,9 @@ export class DoubleTags {
     return result;
   }
 
-  processVariable(content, view) {
+  #processVariable(content, view) {
     const parts = content.split("|").map((part) => part.trim());
-    let value = this.lookup(view, parts[0]);
+    let value = this.#lookup(view, parts[0]);
 
     for (let i = 1; i < parts.length; i++) {
       const [funcName, ...args] = parts[i].split(" ");
@@ -115,7 +115,7 @@ export class DoubleTags {
     return value;
   }
 
-  lookup(obj, key) {
+  #lookup(obj, key) {
     if (key === ".") return obj;
     const keys = key.split(".");
     let value = obj;
@@ -137,8 +137,35 @@ export class DoubleTags {
     return typeof value === "function" ? value.call(obj) : value ?? "";
   }
 
-  escapeRegExp(string) {
+  #escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  #getRegex() {
+    return new RegExp(
+      this.#escapeRegExp(this.tags[0]) +
+        "\\s*(.+?)\\s*" +
+        this.#escapeRegExp(this.tags[1]),
+      "g",
+    );
+  }
+
+  #getSectionRegex() {
+    return new RegExp(
+      this.#escapeRegExp(this.tags[0]) + // {{
+        "\\s*#" +
+        "(.+?)" + // Captures the section name
+        "\\s*" +
+        this.#escapeRegExp(this.tags[1]) + // }}
+        "([\\s\\S]*?)" + // Non-greedy match of content in between
+        this.#escapeRegExp(this.tags[0]) + // {{
+        "\\s*/" + // Matches /
+        "\\s*" +
+        "\\1" + // Matches the same section name
+        "\\s*" +
+        this.#escapeRegExp(this.tags[1]), // }}
+      "g",
+    );
   }
 
   setTags(opening, closing) {
@@ -154,33 +181,6 @@ export class DoubleTags {
   }
 
   escapeByDefault() {
-    this.escapeByDefault = true;
-  }
-
-  getRegex() {
-    return new RegExp(
-      this.escapeRegExp(this.tags[0]) +
-        "\\s*(.+?)\\s*" +
-        this.escapeRegExp(this.tags[1]),
-      "g",
-    );
-  }
-
-  getSectionRegex() {
-    return new RegExp(
-      this.escapeRegExp(this.tags[0]) + // {{
-        "\\s*#" +
-        "(.+?)" + // Captures the section name
-        "\\s*" +
-        this.escapeRegExp(this.tags[1]) + // }}
-        "([\\s\\S]*?)" + // Non-greedy match of content in between
-        this.escapeRegExp(this.tags[0]) + // {{
-        "\\s*/" + // Matches /
-        "\\s*" +
-        "\\1" + // Matches the same section name
-        "\\s*" +
-        this.escapeRegExp(this.tags[1]), // }}
-      "g",
-    );
+    this._escapeByDefault = true;
   }
 }
