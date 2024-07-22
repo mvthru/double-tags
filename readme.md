@@ -1,7 +1,7 @@
 ## Double Tags
 [![Release NPM Package](https://github.com/mvthru/double-tags/actions/workflows/release-package.yml/badge.svg)](https://github.com/mvthru/double-tags/actions/workflows/release-package.yml)
-![NPM Version](https://img.shields.io/npm/v/double-tags)
-![NPM Downloads](https://img.shields.io/npm/dw/double-tags)
+[![NPM Version](https://img.shields.io/npm/v/double-tags)](https://www.npmjs.com/package/double-tags)
+[![NPM Downloads](https://img.shields.io/npm/dw/double-tags)](https://www.npmjs.com/package/double-tags)
 
 Double Tags provides a quick and easy way to replace {{tags}} with something else in NodeJS.
 
