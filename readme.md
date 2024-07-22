@@ -1,4 +1,8 @@
 ## Double Tags
+[![Release NPM Package](https://github.com/mvthru/double-tags/actions/workflows/release-package.yml/badge.svg)](https://github.com/mvthru/double-tags/actions/workflows/release-package.yml)
+![NPM Version](https://img.shields.io/npm/v/double-tags)
+![NPM Downloads](https://img.shields.io/npm/dw/double-tags)
+
 Double Tags provides a quick and easy way to replace {{tags}} with something else in NodeJS.
 
 *Just a quick heads up, Double Tags does not escape HTML by default. This is intentional, but can be changed by calling `doubleTags.escapeByDefault()` before any render functions.*
