@@ -25,20 +25,6 @@ export class DoubleTags {
     this._escapeByDefault = false;
   }
 
-  render(template, view, partials = {}) {
-    try {
-      this._partials = { ...this._partials, ...partials };
-
-      const regex = this.#getRegex();
-      const sectionRegex = this.#getSectionRegex();
-
-      return this.#renderWithCache(template, view, regex, sectionRegex);
-    } catch (error) {
-      console.error("[DoubleTags] Error in render:", error);
-      return "";
-    }
-  }
-
   #renderWithCache(template, view, regex, sectionRegex) {
     const cache = new Map();
 
@@ -49,13 +35,14 @@ export class DoubleTags {
 
       let result = tpl;
 
-      // Process partials
+      // Sections/Loops
       result = result.replace(sectionRegex, (match, sectionName, content) => {
         return this.#processSection(sectionName, content, context);
       });
 
-      // Process variables
+      // Variables
       result = result.replace(regex, (match, content) => {
+        // Partials
         if (content.startsWith(">")) {
           const partialName = content.slice(1).trim();
           const partialTemplate = this._partials[partialName];
@@ -64,10 +51,12 @@ export class DoubleTags {
           }
           return `{{>${partialName}}}`;
         }
+        // Regular
         return this.#processVariable(content, context);
       });
 
       cache.set(tpl, result);
+
       return result;
     };
 
@@ -92,7 +81,7 @@ export class DoubleTags {
       });
     }
 
-    // Escape All HTML (disabled by default)
+    // Escape Result (disabled by default)
     if (this.escapeByDefault) {
       result = this._functions.escape(result);
     }
@@ -113,7 +102,7 @@ export class DoubleTags {
       }
     }
 
-    // Escape All HTML (disabled by default)
+    // Escape Result (disabled by default)
     if (this.escapeByDefault) {
       value = this._functions.escape(value);
     }
@@ -158,20 +147,34 @@ export class DoubleTags {
 
   #getSectionRegex() {
     return new RegExp(
-      this.#escapeRegExp(this._tags[0]) + // {{
+      this.#escapeRegExp(this._tags[0]) +
         "\\s*#" +
         "(.+?)" + // Captures the section name
         "\\s*" +
-        this.#escapeRegExp(this._tags[1]) + // }}
+        this.#escapeRegExp(this._tags[1]) +
         "([\\s\\S]*?)" + // Non-greedy match of content in between
-        this.#escapeRegExp(this._tags[0]) + // {{
-        "\\s*/" + // Matches /
+        this.#escapeRegExp(this._tags[0]) +
+        "\\s*/" +
         "\\s*" +
         "\\1" + // Matches the same section name
         "\\s*" +
         this.#escapeRegExp(this._tags[1]), // }}
       "g",
     );
+  }
+
+  render(template, view, partials = {}) {
+    try {
+      this._partials = { ...this._partials, ...partials };
+
+      const regex = this.#getRegex();
+      const sectionRegex = this.#getSectionRegex();
+
+      return this.#renderWithCache(template, view, regex, sectionRegex);
+    } catch (error) {
+      console.error("[DoubleTags] Error in render:", error);
+      return "";
+    }
   }
 
   setTags(opening, closing) {
