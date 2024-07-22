@@ -82,7 +82,7 @@ export class DoubleTags {
     }
 
     // Escape Result (disabled by default)
-    if (this.escapeByDefault) {
+    if (this._escapeByDefault) {
       result = this._functions.escape(result);
     }
 
@@ -103,7 +103,7 @@ export class DoubleTags {
     }
 
     // Escape Result (disabled by default)
-    if (this.escapeByDefault) {
+    if (this._escapeByDefault) {
       value = this._functions.escape(value);
     }
 
@@ -156,7 +156,7 @@ export class DoubleTags {
         this.#escapeRegExp(this._tags[0]) +
         "\\s*/" +
         "\\s*" +
-        "\\1" + // Matches the same section name
+        "\\1" + // Matches the opening section name
         "\\s*" +
         this.#escapeRegExp(this._tags[1]), // }}
       "g",
