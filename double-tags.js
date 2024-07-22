@@ -1,8 +1,8 @@
 export class DoubleTags {
   constructor() {
-    this.tags = ["{{", "}}"];
-    this.partials = {};
-    this.functions = {
+    this._tags = ["{{", "}}"];
+    this._partials = {};
+    this._functions = {
       upper: (str) => String(str).toUpperCase(),
       lower: (str) => String(str).toLowerCase(),
       capitalize: (str) => {
@@ -27,7 +27,7 @@ export class DoubleTags {
 
   render(template, view, partials = {}) {
     try {
-      this.partials = { ...this.partials, ...partials };
+      this._partials = { ...this._partials, ...partials };
 
       const regex = this.#getRegex();
       const sectionRegex = this.#getSectionRegex();
@@ -49,11 +49,6 @@ export class DoubleTags {
 
       let result = tpl;
 
-      // Escape All HTML (disabled by default)
-      if (this.escapeByDefault) {
-        result = this.functions.escape(result);
-      }
-
       // Process partials
       result = result.replace(sectionRegex, (match, sectionName, content) => {
         return this.#processSection(sectionName, content, context);
@@ -63,7 +58,7 @@ export class DoubleTags {
       result = result.replace(regex, (match, content) => {
         if (content.startsWith(">")) {
           const partialName = content.slice(1).trim();
-          const partialTemplate = this.partials[partialName];
+          const partialTemplate = this._partials[partialName];
           if (partialTemplate) {
             return renderTemplate(partialTemplate, context);
           }
@@ -97,6 +92,11 @@ export class DoubleTags {
       });
     }
 
+    // Escape All HTML (disabled by default)
+    if (this.escapeByDefault) {
+      result = this._functions.escape(result);
+    }
+
     return result;
   }
 
@@ -106,12 +106,18 @@ export class DoubleTags {
 
     for (let i = 1; i < parts.length; i++) {
       const [funcName, ...args] = parts[i].split(" ");
-      if (this.functions[funcName]) {
-        value = this.functions[funcName](value, ...args);
+      if (this._functions[funcName]) {
+        value = this._functions[funcName](value, ...args);
       } else {
         console.warn(`[DoubleTags] Function "${funcName}" not found`);
       }
     }
+
+    // Escape All HTML (disabled by default)
+    if (this.escapeByDefault) {
+      value = this._functions.escape(value);
+    }
+
     return value;
   }
 
@@ -143,41 +149,41 @@ export class DoubleTags {
 
   #getRegex() {
     return new RegExp(
-      this.#escapeRegExp(this.tags[0]) +
+      this.#escapeRegExp(this._tags[0]) +
         "\\s*(.+?)\\s*" +
-        this.#escapeRegExp(this.tags[1]),
+        this.#escapeRegExp(this._tags[1]),
       "g",
     );
   }
 
   #getSectionRegex() {
     return new RegExp(
-      this.#escapeRegExp(this.tags[0]) + // {{
+      this.#escapeRegExp(this._tags[0]) + // {{
         "\\s*#" +
         "(.+?)" + // Captures the section name
         "\\s*" +
-        this.#escapeRegExp(this.tags[1]) + // }}
+        this.#escapeRegExp(this._tags[1]) + // }}
         "([\\s\\S]*?)" + // Non-greedy match of content in between
-        this.#escapeRegExp(this.tags[0]) + // {{
+        this.#escapeRegExp(this._tags[0]) + // {{
         "\\s*/" + // Matches /
         "\\s*" +
         "\\1" + // Matches the same section name
         "\\s*" +
-        this.#escapeRegExp(this.tags[1]), // }}
+        this.#escapeRegExp(this._tags[1]), // }}
       "g",
     );
   }
 
   setTags(opening, closing) {
-    this.tags = [opening, closing];
+    this._tags = [opening, closing];
   }
 
   createPartial(name, template) {
-    this.partials[name] = template;
+    this._partials[name] = template;
   }
 
   createFunction(name, func) {
-    this.functions[name] = func;
+    this._functions[name] = func;
   }
 
   escapeByDefault() {
