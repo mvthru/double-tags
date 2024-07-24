@@ -64,18 +64,29 @@ export class DoubleTags {
   }
 
   #processSection(sectionName, content, view) {
-    let result = "";
     const value = this.#lookup(view, sectionName);
 
+    const [mainContent, elseContent] = this.#splitElseContent(content);
+
+    let result = "";
+
     if (Array.isArray(value)) {
+      // Arrays
       result += value
         .map((item) => {
           const itemContext = { ...view, ...item };
-          return this.render(content, itemContext);
+          return this.render(mainContent, itemContext);
         })
         .join("");
     } else if (value) {
-      result += this.render(content, {
+      // Truthy
+      result += this.render(mainContent, {
+        ...view,
+        [sectionName]: value,
+      });
+    } else if (elseContent) {
+      // @else
+      result += this.render(elseContent, {
         ...view,
         [sectionName]: value,
       });
@@ -87,6 +98,17 @@ export class DoubleTags {
     }
 
     return result;
+  }
+
+  #splitElseContent(content) {
+    const elseRegex = new RegExp(
+      this.#escapeRegExp(this._tags[0]) +
+        "\\s*@else\\s*" +
+        this.#escapeRegExp(this._tags[1]),
+    );
+    const parts = content.split(elseRegex);
+
+    return parts.length > 1 ? [parts[0], parts[1]] : [content, null];
   }
 
   #processVariable(content, view) {
@@ -126,7 +148,7 @@ export class DoubleTags {
       } else if (typeof value === "object" && k in value) {
         value = value[k];
       } else {
-        return "";
+        return null;
       }
     }
     return typeof value === "function" ? value.call(obj) : value ?? "";
@@ -191,5 +213,30 @@ export class DoubleTags {
 
   escapeByDefault() {
     this._escapeByDefault = true;
+  }
+
+  extractSection(template, sectionPath) {
+    const sectionNames = Array.isArray(sectionPath)
+      ? sectionPath
+      : sectionPath.split(".");
+    const sectionRegex = this.#getSectionRegex();
+    const currentSection = sectionNames[0];
+
+    let match;
+    sectionRegex.lastIndex = 0;
+
+    while ((match = sectionRegex.exec(template)) !== null) {
+      if (match[1] === currentSection) {
+        const content = match[2];
+
+        if (sectionNames.length === 1) {
+          return content.trim();
+        } else {
+          return this.extractSection(content, sectionNames.slice(1));
+        }
+      }
+    }
+
+    return null;
   }
 }
