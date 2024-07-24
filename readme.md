@@ -67,7 +67,7 @@ doubleTags.setTags("👉", "👈")
 #### Extract Section
 This might be a bit niche, but perhaps you want to perform some manipluation before rendering and need to extract a partiular section.
 ````js
-doubleTags.extractSection("cart.items")
+doubleTags.extractSection(template, "cart.items")
 ````
 
 ### Tags
