@@ -64,6 +64,12 @@ doubleTags.escapeByDefault()
 doubleTags.setTags("👉", "👈")
 ````
 
+#### Extract Section
+This might be a bit niche, but perhaps you want to perform some manipluation before rendering and need to extract a partiular section.
+````js
+doubleTags.extractSection("cart.items")
+````
+
 ### Tags
 
 #### Functions
@@ -78,8 +84,33 @@ Alongside custom functions, Double Tags also has a small handful of built-in fun
 
 `escape` - Escapes HTML characters.
 
-#### Loops
-If the JSON you pass to Double Tags contains an array of objects, you can loop over this. A special `{{@index}}` tag is also available inside of loops, to return the current item index.
+#### Sections
+Sometimes you want to do more with a variable. Maybe it's an array and you want to loop over it, or it's a boolean and you want to show one thing if it's true and another thing it's false. Sections help you achieve this. 
+
+Sections have a couple of special tags, `{{@index}}` and `{{@else}}`, which are what they sound like, but more of them below.
+
+##### Truthy
+You want to display some content only when the variable is true or has content.
+
+````js
+{{#likes_pizza}}
+  <p>This boi likes pizza.</p>
+{{/likes_pizza}}
+````
+
+##### Truthy (with else)
+You have a boolean variable and want to change the content based on if it's true or false, open up a section and use the `{{@else}}` tag. - Everything before the `{{@else}}` will be shown when the variable is true, and everything after when the variable is false.
+
+````js
+{{#likes_pizza}}
+  <p>This boi likes pizza.</p>
+  {{@else}}
+  <p>This boi does NOT like pizza... 😧</p>
+{{/likes_pizza}}
+````
+
+##### Loops
+If you create a section from an array, each item will be rendered using the template between the opening/closing tags. - You can use the special `{{@index}}` tag available only within loops to return the current item's index.
 
 🙋 Nested loops are not currently supported.
 
