@@ -8,6 +8,7 @@ jobs:
   publish-npm:
     runs-on: ubuntu-latest
     steps:
+      - if: "!github.event.release.prerelease"
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
