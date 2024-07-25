@@ -4,6 +4,7 @@ on:
     types: [created]
 jobs:
   publish-npm:
+    if: "!github.event.release.prerelease"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -13,6 +14,5 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
       - run: npm publish
-        if: "!github.event.release.prerelease"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
