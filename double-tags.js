@@ -25,7 +25,7 @@ export class DoubleTags {
     this._escapeByDefault = false;
   }
 
-  #renderWithCache(template, view, regex, sectionRegex) {
+  #renderWithCache(template, view) {
     const cache = new Map();
 
     const renderTemplate = (tpl, context) => {
@@ -33,14 +33,9 @@ export class DoubleTags {
         return cache.get(tpl);
       }
 
-      let result = tpl;
+      let result = this.#processSections(tpl, context);
 
-      // Sections/Loops
-      result = result.replace(sectionRegex, (match, sectionName, content) => {
-        return this.#processSection(sectionName, content, context);
-      });
-
-      // Variables
+      const regex = this.#getRegex();
       result = result.replace(regex, (match, content) => {
         // Partials
         if (content.startsWith(">")) {
@@ -51,16 +46,22 @@ export class DoubleTags {
           }
           return `{{>${partialName}}}`;
         }
-        // Regular
+        // Regular variables
         return this.#processVariable(content, context);
       });
 
       cache.set(tpl, result);
-
       return result;
     };
 
     return renderTemplate(template, view);
+  }
+
+  #processSections(template, view) {
+    const sectionRegex = this.#getSectionRegex();
+    return template.replace(sectionRegex, (match, sectionName, content) => {
+      return this.#processSection(sectionName, content, view);
+    });
   }
 
   #processSection(sectionName, content, view) {
@@ -74,27 +75,20 @@ export class DoubleTags {
       // Arrays
       result += value
         .map((item) => {
-          const itemContext = { ...view, ...item };
-          return this.render(mainContent, itemContext);
+          const itemContext = { ...view, ...item, ".": item };
+          return this.#renderWithCache(mainContent, itemContext);
         })
         .join("");
     } else if (value) {
       // Truthy
-      result += this.render(mainContent, {
-        ...view,
-        [sectionName]: value,
-      });
+      const newContext =
+        typeof value === "object"
+          ? { ...view, ...value, ".": value }
+          : { ...view, [sectionName]: value, ".": value };
+      result += this.#renderWithCache(mainContent, newContext);
     } else if (elseContent) {
       // @else
-      result += this.render(elseContent, {
-        ...view,
-        [sectionName]: value,
-      });
-    }
-
-    // Escape Result (disabled by default)
-    if (this._escapeByDefault) {
-      result = this._functions.escape(result);
+      result += this.#renderWithCache(elseContent, view);
     }
 
     return result;
@@ -124,12 +118,11 @@ export class DoubleTags {
       }
     }
 
-    // Escape Result (disabled by default)
     if (this._escapeByDefault) {
       value = this._functions.escape(value);
     }
 
-    return value;
+    return value != null ? value : "";
   }
 
   #lookup(obj, key) {
@@ -148,7 +141,7 @@ export class DoubleTags {
       } else if (typeof value === "object" && k in value) {
         value = value[k];
       } else {
-        return null;
+        return "";
       }
     }
     return typeof value === "function" ? value.call(obj) : value ?? "";
@@ -171,16 +164,15 @@ export class DoubleTags {
     return new RegExp(
       this.#escapeRegExp(this._tags[0]) +
         "\\s*#" +
-        "(.+?)" + // Captures the section name
+        "(.+?)" +
         "\\s*" +
         this.#escapeRegExp(this._tags[1]) +
-        "([\\s\\S]*?)" + // Non-greedy match of content in between
+        "([\\s\\S]*?)" +
         this.#escapeRegExp(this._tags[0]) +
         "\\s*/" +
+        "\\1" +
         "\\s*" +
-        "\\1" + // Matches the opening section name
-        "\\s*" +
-        this.#escapeRegExp(this._tags[1]), // }}
+        this.#escapeRegExp(this._tags[1]),
       "g",
     );
   }
@@ -188,11 +180,7 @@ export class DoubleTags {
   render(template, view, partials = {}) {
     try {
       this._partials = { ...this._partials, ...partials };
-
-      const regex = this.#getRegex();
-      const sectionRegex = this.#getSectionRegex();
-
-      return this.#renderWithCache(template, view, regex, sectionRegex);
+      return this.#renderWithCache(template, view);
     } catch (error) {
       console.error("[DoubleTags] Error in render:", error);
       return "";

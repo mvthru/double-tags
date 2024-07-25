@@ -1,6 +1,6 @@
 {
   "name": "double-tags",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "double-tags.js",
   "type": "module",
   "repository": {
